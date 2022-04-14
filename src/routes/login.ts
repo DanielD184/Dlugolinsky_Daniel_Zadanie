@@ -6,6 +6,9 @@ import {
 	NextFunction
 } from 'express'
 
+import { models } from '../db'
+const { Users } = models;
+
 const express = require("express");
 const router: Router = Router();
 const jwt = require('jsonwebtoken');
@@ -26,7 +29,8 @@ export default () => {
             return res.json({ message: "Email or password doesnt match!"});
 
         const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, 'test')
-        res.json({ Message: "Welcome!", token:jwtToken});   
+        res.json({ Message: "Welcome!", token:jwtToken, role:userWithEmail.role});
+        Users.update({token : jwtToken}, {where: { email:userWithEmail.email}})
 	})
 
 	return router
