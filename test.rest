@@ -1,0 +1,10 @@
+GET http://localhost:8000/users
+
+###
+
+POST http://localhost:8000/login
+Content-type:application/json
+
+{
+    "username":"admin"
+}
