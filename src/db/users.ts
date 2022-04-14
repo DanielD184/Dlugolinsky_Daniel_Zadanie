@@ -32,6 +32,9 @@ export default (sequelize: Sequelize) => {
         email: {
 			type: DataTypes.STRING(100)
 		},
+		password: {
+			type: DataTypes.STRING(100)
+		},
         age: {
 			type: DataTypes.INTEGER()
 		},

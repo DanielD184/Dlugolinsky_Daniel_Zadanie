@@ -13,7 +13,7 @@ passport.use(
     // TODO: process.env.ACCESS_TOKEN_SECRET insted of token
     },
     function (jwtPayload, done) {
-      return User.findOne({ where: { email: jwtPayload.email } })
+      return User.findOne({ where: { email: jwtPayload.email, password: jwtPayload.password } })
         .then((user) => {
           return done(null, user);
         })

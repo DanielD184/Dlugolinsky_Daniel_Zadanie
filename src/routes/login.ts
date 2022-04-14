@@ -13,19 +13,19 @@ const jwt = require('jsonwebtoken');
 export default () => {
 	router.post('/', async (_req: Request, res: Response, _next: NextFunction) => {
 
-		const { email, name } = _req.body;
+		const { email, password } = _req.body;
 
         const userWithEmail = await UserModel.findOne({ where: {email} }).catch((err) => {
             console.error("Error", err);
         });
 
         if(!userWithEmail)
-            return res.json({ message: "Email or name doesnt match!"});
+            return res.json({ message: "Email or password doesnt match!"});
 
-        if(userWithEmail.name !== name)
-            return res.json({ message: "Email or name doesnt match!"});
+        if(userWithEmail.password !== password)
+            return res.json({ message: "Email or password doesnt match!"});
 
-        const jwtToken = jwt.sign({ email: userWithEmail.email }, process.env.ACCESS_TOKEN_SECRET)
+        const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, process.env.ACCESS_TOKEN_SECRET)
 
         res.json({ Message: "Welcome!", token:jwtToken});   
 	})

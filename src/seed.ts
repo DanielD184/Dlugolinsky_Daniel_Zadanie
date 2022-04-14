@@ -51,6 +51,7 @@ const seedDB = async () => {
 		surname: 'user',
 		nickName: 'user',
 		email: 'user@gmail.com',
+		password: 'user',
 		age: 99,
 		role: USER_ROLE.USER
 	},	{
@@ -58,6 +59,7 @@ const seedDB = async () => {
 		surname: 'admin',
 		nickName: 'admin',
 		email: 'admin@gmail.com',
+		password: 'admin',
 		age: 99,
 		role: USER_ROLE.ADMIN
 	}])

@@ -12,13 +12,13 @@ const router: Router = Router()
 export default () => {
 	router.post('/', async (_req: Request, res: Response, _next: NextFunction) => {
 
-		const { name, surname, nickName, email, age, role } = _req.body;
+		const { name, surname, nickName, email, password, age, role } = _req.body;
 
 		const alreadyExists = await UserModel.findOne({ where: {email} });
 
 		if (alreadyExists) return res.json({ message:"User Email already exists"});
 
-		const newUser = new UserModel({ name, surname, nickName, email, age, role })
+		const newUser = new UserModel({ name, surname, nickName, email, password, age, role })
 		const savedUser = await newUser.save().catch((err) => {
 			console.log("err", err);
 			res.json({error:"Cannot register at the moment"})
