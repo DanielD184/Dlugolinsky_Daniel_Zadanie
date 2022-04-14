@@ -40,6 +40,9 @@ export default (sequelize: Sequelize) => {
 		},
 		role: {
 			type: DataTypes.ENUM(...Object.values(USER_ROLE))
+		},
+		token: {
+			type: DataTypes.STRING(300)
 		}
 	}, {
 		paranoid: true,
