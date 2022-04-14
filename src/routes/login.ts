@@ -25,8 +25,7 @@ export default () => {
         if(userWithEmail.password !== password)
             return res.json({ message: "Email or password doesnt match!"});
 
-        const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, process.env.ACCESS_TOKEN_SECRET)
-
+        const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, 'test')
         res.json({ Message: "Welcome!", token:jwtToken});   
 	})
 

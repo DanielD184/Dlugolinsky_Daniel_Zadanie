@@ -10,11 +10,9 @@ import Register from './routes/register'
 import Login from './routes/login'
 import './auth/passport'
 
-import Payment from './routes/payment'
 
 require('dotenv').config()
 const app = express()
-
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -24,7 +22,13 @@ app.use('/users', UsersRouter())
 app.use('/register', Register())
 app.use('/login', Login())
 
-
+app.get("/secretDebug",
+  function(req, res, next){
+    console.log(req.get('Authorization'));
+    next();
+  }, function(req, res){
+    res.json("debugging");
+});
 const httpServer = http.createServer(app)
 
 sequelize.sync()
