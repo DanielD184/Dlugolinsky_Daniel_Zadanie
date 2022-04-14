@@ -6,6 +6,7 @@ import { Sequelize } from 'sequelize'
 
 import defineExercise from './exercise'
 import defineProgram from './program'
+import defineUsers from './users'
 
 const sequelize: Sequelize = new Sequelize('postgresql://postgres:11Dano11@localhost:5432/fitness_app', {
 	logging: false
@@ -17,6 +18,7 @@ const modelsBuilder = (instance: Sequelize) => ({
 	// Import models to sequelize
 	Exercise: instance.import(path.join(__dirname, 'exercise'), defineExercise),
 	Program: instance.import(path.join(__dirname, 'program'), defineProgram),
+	Users: instance.import(path.join(__dirname, 'users'), defineUsers),
 })
 
 const models = modelsBuilder(sequelize)

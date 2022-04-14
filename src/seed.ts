@@ -1,9 +1,12 @@
+import { getMaxListeners } from 'process'
+import { addSyntheticLeadingComment } from 'typescript'
 import { models, sequelize } from './db/index'
-import { EXERCISE_DIFFICULTY } from './utils/enums'
+import { EXERCISE_DIFFICULTY, USER_ROLE } from './utils/enums'
 
 const {
 	Exercise,
 	Program,
+	Users,
 } = models
 
 const seedDB = async () => {
@@ -41,6 +44,22 @@ const seedDB = async () => {
 		name: 'Exercise 6',
 		difficulty: EXERCISE_DIFFICULTY.HARD,
 		programID: 2
+	}])
+
+	await Users.bulkCreate([{
+		name: 'user',
+		surname: 'user',
+		nickName: 'user',
+		email: 'user@gmail.com',
+		age: 99,
+		role: USER_ROLE.USER
+	},	{
+		name: 'admin',
+		surname: 'admin',
+		nickName: 'admin',
+		email: 'admin@gmail.com',
+		age: 99,
+		role: USER_ROLE.ADMIN
 	}])
 }
 
