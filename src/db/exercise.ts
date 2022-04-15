@@ -31,6 +31,9 @@ export default (sequelize: Sequelize) => {
 		},
 		name: {
 			type: DataTypes.STRING(200),
+		},
+		userId:{
+			type:DataTypes.BIGINT
 		}
 	}, {
 		paranoid: true,
