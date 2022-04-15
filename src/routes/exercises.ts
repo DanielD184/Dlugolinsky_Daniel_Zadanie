@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 	
 import { models } from '../db'
 import { USER_ROLE } from '../utils/enums'
-import { checkIsInRole } from '../auth/roleCheck';
+import { checkIsInRole } from '../auth/roleCheck'
 
 
 const router: Router = Router()
@@ -42,11 +42,11 @@ export default () => {
 		const newExercise = new Exercise({ difficulty, name, programID, userId })
 		const savedExercise = await newExercise.save().catch((err) => {
 			console.log("err", err);
-			res.json({error:"Cannot create new exercise at the moment"})
+			return res.json({error:"Cannot create new exercise at the moment"})
 		}); 
 
 		if(savedExercise) return res.json({message: 'Thanks for creating new exercise!' });
-		else res.json({ error:"Cannot create new exercise at the moment!"});
+		else return res.json({ error:"Cannot create new exercise at the moment!"});
 	})
 	
 	// Update exercises / Admin only
@@ -73,9 +73,20 @@ export default () => {
 	})
 
 	// End Exercise / All
-	router.put('/endexercise/:id', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
-		const id = _req.params.id;
-		await Exercise.destroy({where: { id:id}})
+	router.delete('/endexercise/:id', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
+		const this_id = _req.params.id;
+		const token = _req.get('Authorization').split(" ")[1];
+		const data = await Users.findOne({where:{token:token}})
+		const test = await Exercise.findOne({where:{userId:data.id, id:this_id}})
+		console.log("tes")
+		console.log(test)
+		if(test === null){
+			return res.send({
+				message:`User with id ${data.id} doesnt track exercise ${this_id}.`
+			})
+		}
+		
+		await Exercise.destroy({where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
 			  	res.send({
@@ -84,13 +95,13 @@ export default () => {
 			} 
 			else {
 				res.send({
-					message: `Cannot delete Exercise with id=${id}.`
+					message: `Cannot delete Exercise with id=${this_id}.`
 				});
 			}
 		})
 		.catch(err => {
 			res.status(500).send({
-			  	message: "Could not delete Exercise with id=" + id
+			  	message: "Could not delete Exercise with id=" + this_id
 			});
 		});
 	})
@@ -100,7 +111,12 @@ export default () => {
 		const this_id = _req.params.id;
 		const token = _req.get('Authorization').split(" ")[1];
 		const data = await Users.findOne({where:{token:token}})
-
+		if(!Exercise.findOne({where:{userId:data.id, id:this_id}})){
+			console.log("Found it")
+			res.send({
+				message:`User with id ${data.id} doesnt track exercise ${this_id}.`
+			})
+		}
 		await Exercise.update(_req.body, {where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
