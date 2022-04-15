@@ -64,8 +64,7 @@ export default () => {
 		var exerciseFiltered = Array();
 		exercise.forEach(data => {
 			if(data.deletedAt){
-				//TODO:Calculate duration
-				exerciseFiltered.push({name:data.name, datetime:data.createdAt, difficulty:data.difficulty, duration: (data.deletedAt - data.createdAt)})
+				exerciseFiltered.push({name:data.name, datetime:data.createdAt, difficulty:data.difficulty, duration: ((data.deletedAt - data.createdAt)/1000)	.toFixed(0)})
 			}
 		})
 		
