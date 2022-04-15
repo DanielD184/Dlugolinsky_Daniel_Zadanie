@@ -14,16 +14,14 @@ const router: Router = Router()
 const passport  = require('passport');
 
 const {
-	Users
+	Users,
+	Exercise
 } = models
 
 export default () => {
 	router.get('/', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
-		const loggedUser = await Users.findOne({where:{token:token}})
-		
-		//TODO: Error handling		
-		
+		const loggedUser = await Users.findOne({where:{token:token}})		
 
 		if(loggedUser.role == USER_ROLE.ADMIN){
 			await Users.findAll()
@@ -55,16 +53,26 @@ export default () => {
 
 	router.get('/profile', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
+		
+		const data = await Users.findOne({where:{token:token}})
 
-		await Users.findOne({where:{token:token}})
-		.then((data)=> {
-			return res.json({
-				name: data.name,
-				surname: data.surname,
-				age: data.age,
-				nickName: data.nickName,
-				message: 'Details of user'
-			})
+		const exercise = await Exercise.findAll({ paranoid: false, where:{userId:data.id}})
+		var exerciseFiltered = Array();
+		exercise.forEach(data => {
+			if(data.deletedAt){
+				//TODO:Calculate duration
+				exerciseFiltered.push({name:data.name, datetime:data.createdAt, difficulty:data.difficulty, duration: (data.deletedAt - data.createdAt)})
+			}
+		})
+		
+
+		return res.json({
+			name: data.name,
+			surname: data.surname,
+			age: data.age,
+			nickName: data.nickName,
+			message: 'Details of user',
+			exercises: exerciseFiltered
 		})
 	})
 
