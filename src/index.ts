@@ -6,8 +6,6 @@ import { sequelize } from './db'
 import ProgramRouter from './routes/programs'
 import ExerciseRouter from './routes/exercises'
 import UsersRouter from './routes/users'
-import Register from './routes/register'
-import Login from './routes/login'
 import './auth/passport'
 
 
@@ -19,16 +17,9 @@ app.use(bodyParser.json())
 app.use('/programs', ProgramRouter())
 app.use('/exercises', ExerciseRouter())
 app.use('/users', UsersRouter())
-app.use('/register', Register())
-app.use('/login', Login())
+//app.use('/register', Register())
+//app.use('/login', Login())
 
-app.get("/secretDebug",
-  function(req, res, next){
-    console.log(req.get('Authorization'));
-    next();
-  }, function(req, res){
-    res.json("debugging");
-});
 const httpServer = http.createServer(app)
 
 sequelize.sync()
