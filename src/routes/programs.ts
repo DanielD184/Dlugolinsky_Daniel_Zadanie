@@ -8,7 +8,7 @@ import {
 import { models } from '../db'
 import { checkIsInRole } from '../auth/roleCheck'
 import { USER_ROLE } from '../utils/enums'
-import { setLang } from '../auth/setLocale'
+import { setLang } from '../services/setLocale'
 
 const router: Router = Router()
 const passport  = require('passport');

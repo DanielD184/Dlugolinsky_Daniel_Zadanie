@@ -3,8 +3,8 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { models } from '../db'
 import { USER_ROLE } from '../utils/enums'
 import { checkIsInRole } from '../auth/roleCheck'
-import { setLang } from '../auth/setLocale'
-import { filterExercise } from '../auth/filtering'
+import { setLang } from '../services/setLocale'
+import { filterExercise } from '../services/filtering'
 const router: Router = Router()
 const passport  = require('passport');
 

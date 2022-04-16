@@ -9,7 +9,7 @@ import { models } from '../db';
 import { checkIsInRole } from '../auth/roleCheck';
 import { USER_ROLE } from '../utils/enums';
 import { UserModel } from '../db/users';
-import { setLang } from '../auth/setLocale';
+import { setLang } from '../services/setLocale';
 
 
 const router: Router = Router()
