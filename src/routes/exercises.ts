@@ -4,7 +4,7 @@ import { models } from '../db'
 import { USER_ROLE } from '../utils/enums'
 import { checkIsInRole } from '../auth/roleCheck'
 import { setLang } from '../auth/setLocale'
-
+import { filterExercise } from '../auth/filtering'
 const router: Router = Router()
 const passport  = require('passport');
 
@@ -16,18 +16,31 @@ const {
 
 export default () => {
 	// Get all exercises / Admin only
-	router.get('/', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
-		const exercises = await Exercise.findAll({ paranoid: false,
-			include: [{
-				model: Program,
-				as: 'program'
-			}]
-		})
-
-		return res.json({
-			data: exercises,
-			message: _req.i18n.__('List of exercises')
-		})
+	router.get('/', passport.authenticate('jwt', {session:false}), setLang(), filterExercise(), async (_req: Request, res: Response, _next: NextFunction) => {
+		if (_req.query.page && _req.query.limit){
+			return res.json({
+				data: _req.paginatedExercises,
+				message: _req.i18n.__('List of exercises')
+			})
+		}
+		else if(_req.query.programID){
+			return res.json({
+				data: _req.programIDExercise,
+				message: _req.i18n.__('List of exercises')
+			})
+		}
+		else if(_req.query.search){
+			return res.json({
+				data: _req.search,
+				message: _req.i18n.__('List of exercises')
+			})
+		}
+		else {
+			return res.json({
+				data: _req.exercises,
+				message: _req.i18n.__('List of exercises')
+			})
+		}
 	})
 
 	// Create new exercises / Admin only
