@@ -11,10 +11,11 @@ import { USER_ROLE } from '../utils/enums';
 import { UserModel } from '../db/users';
 import { setLang } from '../auth/setLocale';
 
-const router: Router = Router()
 
+const router: Router = Router()
 const passport  = require('passport');
 const jwt = require('jsonwebtoken');
+const {body, validationResult} = require('express-validator')
 
 const {
 	Users,
@@ -121,7 +122,7 @@ export default () => {
 		})
 		.catch(err => {
 			console.error(err)
-			return res.status(500).send({
+			return res.status(400).send({
 				message: _req.i18n.__('Error')
 			})
 		})
@@ -153,8 +154,14 @@ export default () => {
 	})
 
 	// Login
-	router.post('/login', setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.post('/login', setLang(), body('email').isEmail(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const { email, password } = _req.body;
+		
+		const errors = validationResult(_req)
+		console.error(errors)
+		if (!errors.isEmpty() && errors.errors[0].param === 'email') {
+			return res.status(400).send('Invalid email address. Please try again.')
+		}
 
         const userWithEmail = await UserModel.findOne({ where: {email} })
 		.catch((err) => {
@@ -184,13 +191,33 @@ export default () => {
 	})
 
 	// Registration
-	router.post('/register', setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.post('/registration', setLang(), body('email').isEmail(), body('password').isLength({min: 6}), async (_req: Request, res: Response, _next: NextFunction) => {
 		const { name, surname, nickName, email, password, age, role } = _req.body;
+
+		const errors = validationResult(_req)
+		console.error(errors)
+		if (!errors.isEmpty() && errors.errors[0].param === 'email') {
+			return res.status(400).send('Invalid email address. Please try again.')
+		}
+		if (!errors.isEmpty() && errors.errors[0].param === 'password') {
+			return res
+			.status(400)
+			.send('Password must be longer than 6 characters.')
+		}
+
+		if(role != USER_ROLE.ADMIN || role != USER_ROLE.USER){
+			return res.status(400).send(
+				"Invalid role. USER/ADMIN"
+			)
+		}
 
 		const alreadyExists = await UserModel.findOne({ where: {email} });
 
 		if (alreadyExists) return res.status(400).send({
 			message: _req.i18n.__('User already exists!')
+		})
+		if (!email || !password) return res.status(400).send({
+			message: _req.i18n.__('Email or password is needed for registration.')
 		})
 
 		const newUser = new UserModel({ name, surname, nickName, email, password, age, role })
