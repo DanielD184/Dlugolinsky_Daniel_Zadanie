@@ -1,10 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express'
 	
 import { models } from '../db'
-import { USER_ROLE } from '../utils/enums'
+import { EXERCISE_DIFFICULTY, USER_ROLE } from '../utils/enums'
 import { checkIsInRole } from '../auth/roleCheck'
 import { setLang } from '../services/setLocale'
 import { filterExercise } from '../services/filtering'
+
 const router: Router = Router()
 const passport  = require('passport');
 
@@ -44,24 +45,46 @@ export default () => {
 	})
 
 	// Create new exercises / Admin only
-	router.post('/', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.post('/', passport.authenticate('jwt', {session:false}), setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
 		const user = await Users.findOne({where:{token:token}})
 		const { difficulty, name , programID} = _req.body;
-		const alreadyExists = await Exercise.findOne({ where: {name} });
+
+		if(difficulty !== EXERCISE_DIFFICULTY.EASY && difficulty !== EXERCISE_DIFFICULTY.MEDIUM && difficulty !== EXERCISE_DIFFICULTY.HARD){
+			return res.status(400).json({
+				status:400,
+				message:_req.i18n.__("Choose correct difficulty! EASY/MEDIUM/HARD")
+			})
+		}
+		if(!isNaN(programID)){
+			await Program.findOne({where: {id:programID}})
+			.then(programExists => {
+				if(!programExists){
+					return res.status(400).json({
+						status:400,
+						message:_req.i18n.__("Program doesnt exist!")
+					})
+				}
+			})
+		}
+		else{
+			return res.status(400).json({
+				status:400,
+				message:_req.i18n.__("ProgramID must be a number!")
+			})
+		}
 		const userId = user.id
 
-		if (alreadyExists) return res.json({ message:_req.i18n.__("Exercise already exists")});
 		try{
-		const newExercise = new Exercise({ difficulty, name, programID, userId })
-		
-		const savedExercise = await newExercise.save().catch((err) => {
-			console.error(err);
-			return res.json({error:_req.i18n.__("Cannot create new exercise at the moment!")})
-		}); 
+			const newExercise = new Exercise({ difficulty, name, programID, userId })
+			
+			const savedExercise = await newExercise.save().catch((err) => {
+				console.error(err);
+				return res.json({message:_req.i18n.__("Cannot create new exercise at the moment!")})
+			}); 
 
-		if(savedExercise) return res.json({message: _req.i18n.__('Thanks for creating new exercise!')});
-		else return res.json({ message:_req.i18n.__("Cannot create new exercise at the moment!")});
+			if(savedExercise) return res.json({message: _req.i18n.__('Thanks for creating new exercise!')});
+			else return res.json({ message:_req.i18n.__("Cannot create new exercise at the moment!")});
 		}
 		catch(err){
 			console.error(err)
@@ -113,12 +136,12 @@ export default () => {
 		.then(num => {
 			if (num == 1) {
 			  	res.send({
-					message: _req.i18n.__("Exercise was deleted successfully!")
+					message: _req.i18n.__("Exercise was ended successfully!")
 			  	});
 			} 
 			else {
 				res.send({
-					message: _req.i18n.__("Cannot delete Exercise with id ") + this_id
+					message: _req.i18n.__("Cannot end Exercise with id ") + this_id
 				});
 			}
 		})
@@ -126,7 +149,7 @@ export default () => {
 			console.error(err)
 			res.status(500).json({
 				status:500,
-			  	message: _req.i18n.__("Could not delete Exercise with id ") + this_id
+			  	message: _req.i18n.__("Could not end Exercise with id ") + this_id
 			});
 		});
 	})
