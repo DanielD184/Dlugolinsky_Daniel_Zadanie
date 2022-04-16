@@ -1,7 +1,11 @@
-import { eq } from 'sequelize/types/lib/operators'
+import {
+	Request,
+	Response,
+	NextFunction
+} from 'express'
 import { i18n } from '../i18n.config'
 
-const setLang = () => (req,res,next) => {
+const setLang = () => (req:Request, res: Response, next: NextFunction) => {
     console.log(req.get('language'))
 
     if (req.get('language') !== undefined) {
