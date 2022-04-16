@@ -34,5 +34,11 @@
     "Program was deleted successfully!" : "Program bol úspešne odstránený!",
     "Cannot delete Program with id " : "Nemožno odstrániť program s ID ",
     "Could not delete Program with id " : "Nedokázal som ostrániť program s ID ",
-    "Email or password is needed for registration." : "Email or password is needed for registration."
+    "Email and password is needed for registration." : "Email a heslo je potrebné pre registráciu.",
+    "Choose correct difficulty! EASY/MEDIUM/HARD" : "Vyberte jednu z možností! EASY/MEDIUM/HARD",
+    "Program doesnt exist" : "Program neexistuje",
+    "ProgramID must be a number!" : "ProgramID musí byť číslo!",
+    "Exercise was ended successfully!" : "Cvičenie bolo úspešne ukončené!",
+    "Cannot end Exercise with id " : "Nemožno ukončiť cvičenie ",
+    "Could not end Exercise with id " : "Nedokázal som ukončiť cvičenie "
  }

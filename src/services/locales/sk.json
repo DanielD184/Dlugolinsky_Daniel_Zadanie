@@ -1,0 +1,15 @@
+{
+	"Welcome!": "Welcome!",
+	"Details of user": "Details of user",
+	"Your role is not an ": "Your role is not an ",
+	"Choose correct difficulty! EASY/MEDIUM/HARD": "Choose correct difficulty! EASY/MEDIUM/HARD",
+	"Cannot create new exercise at the moment!": "Cannot create new exercise at the moment!",
+	"Thanks for creating new exercise!": "Thanks for creating new exercise!",
+	"ProgramID must be a number!": "ProgramID must be a number!",
+	"Email or password doesnt match!": "Email or password doesnt match!",
+	"Program doesnt exist!": "Program doesnt exist!",
+	"List of exercises": "List of exercises",
+	"Exercise was deleted successfully!": "Exercise was deleted successfully!",
+	"List of users": "List of users",
+	"Cant find user with id ": "Cant find user with id "
+}

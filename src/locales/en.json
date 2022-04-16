@@ -34,5 +34,11 @@
     "Program was deleted successfully!" : "Program was deleted successfully!",
     "Cannot delete Program with id " : "Cannot delete Program with id ",
     "Could not delete Program with id " : "Could not delete Program with id ",
-    "Email or password is needed for registration." : "Email or password is needed for registration."
+    "Email and password is needed for registration." : "Email and password is needed for registration.",
+    "Choose correct difficulty! EASY/MEDIUM/HARD" : "Choose correct difficulty! EASY/MEDIUM/HARD",
+    "Program doesnt exist" : "Program doesnt exist",
+    "ProgramID must be a number!" : "ProgramID must be a number!",
+    "Exercise was ended successfully!" : "Exercise was ended successfully!",
+    "Cannot end Exercise with id " : "Cannot end Exercise with id ",
+    "Could not end Exercise with id " : "Could not end Exercise with id "
  }

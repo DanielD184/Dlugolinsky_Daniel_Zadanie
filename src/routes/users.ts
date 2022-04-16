@@ -73,7 +73,7 @@ export default () => {
 		}
 	})
 
-	// Get profile / All users
+	// Get 	 / All users
 	router.get('/profile', passport.authenticate('jwt', {session:false}), setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
 		
@@ -180,13 +180,13 @@ export default () => {
         if(!userWithEmail)
             return res.status(400).json({
 				status: 400,
-				message: _req.i18n.__('Email or password doesnt match!')
+				message: _req.i18n.__('Email and password doesnt match!')
 			})
 
         if(userWithEmail.password !== password)
 			return res.status(400).json({
 				status:400,
-				message: _req.i18n.__('Email or password doesnt match!')
+				message: _req.i18n.__('Email and password doesnt match!')
 			})
 		try{
         const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, 'test')
