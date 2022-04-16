@@ -33,5 +33,6 @@
     "Could not update Program with id " : "Could not update Program with id ",
     "Program was deleted successfully!" : "Program was deleted successfully!",
     "Cannot delete Program with id " : "Cannot delete Program with id ",
-    "Could not delete Program with id " : "Could not delete Program with id "
+    "Could not delete Program with id " : "Could not delete Program with id ",
+    "Email or password is needed for registration." : "Email or password is needed for registration."
  }

@@ -1,11 +1,16 @@
 import { models } from '../db'
+import {
+	Request,
+	Response,
+	NextFunction
+} from 'express'
 
 const {
 	Exercise,
 	Program
 } = models
 
-const filterExercise = () => async (req, res, next) => {
+const filterExercise = () => async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
     const programID = parseInt(req.query.programID);

@@ -33,5 +33,6 @@
     "Could not update Program with id " : "Nedokázal som aktualizovať program s ID ",
     "Program was deleted successfully!" : "Program bol úspešne odstránený!",
     "Cannot delete Program with id " : "Nemožno odstrániť program s ID ",
-    "Could not delete Program with id " : "Nedokázal som ostrániť program s ID "
+    "Could not delete Program with id " : "Nedokázal som ostrániť program s ID ",
+    "Email or password is needed for registration." : "Email or password is needed for registration."
  }

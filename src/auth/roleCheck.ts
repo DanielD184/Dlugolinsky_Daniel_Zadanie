@@ -1,11 +1,15 @@
 import { models } from '../db'
-import { i18n } from '../i18n.config'
+import {
+	Request,
+	Response,
+	NextFunction
+} from 'express'
 
 const {
 	Users
 } = models
 
-const checkIsInRole = (roles) => async (req, res, next) => {
+const checkIsInRole = (roles) => async (req:Request, res: Response, next: NextFunction) => {
     const token = req.get('Authorization').split(" ")[1]
 
     const loggedUser = await Users.findOne({where:{token:token}})
