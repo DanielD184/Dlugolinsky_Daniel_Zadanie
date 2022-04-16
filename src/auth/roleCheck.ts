@@ -1,10 +1,5 @@
-//TODO: Return 3 values and compare User/Admin/Not Logged
-
-import { Router, Request, Response, NextFunction } from 'express'
-
 import { models } from '../db'
-import { USER_ROLE } from '../utils/enums';
-
+import { i18n } from '../i18n.config'
 
 const {
 	Users
@@ -13,17 +8,17 @@ const {
 const checkIsInRole = (roles) => async (req, res, next) => {
     const token = req.get('Authorization').split(" ")[1]
 
-    if (!token) {
-        return res.send({
-            message: "Please log in"
+    const loggedUser = await Users.findOne({where:{token:token}})
+    if (loggedUser === null){
+        return res.status(400).json({
+            status: 400,
+            message: req.i18n.__("User not found!")
         })
     }
-
-    const loggedUser = await Users.findOne({where:{token:token}})
-    
     if (loggedUser.role !== roles) {
-        return res.send({
-            message: "Your role is not an" + roles
+        return res.status(400).json({
+            status: 400,
+            message: req.i18n.__("Your role is not an ") + roles
         })
     }
     

@@ -9,6 +9,7 @@ import { models } from '../db';
 import { checkIsInRole } from '../auth/roleCheck';
 import { USER_ROLE } from '../utils/enums';
 import { UserModel } from '../db/users';
+import { setLang } from '../auth/setLocale';
 
 const router: Router = Router()
 
@@ -22,16 +23,27 @@ const {
 
 export default () => {
 	// Get all Users etc. / Admin only
-	router.get('/', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.get('/', passport.authenticate('jwt', {session:false}), setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
 		const loggedUser = await Users.findOne({where:{token:token}})		
-
+		if(loggedUser === null){
+			return res.status(400).json({
+				status: 400,
+				message: _req.i18n.__('User not found!')
+			})
+		}
 		if(loggedUser.role == USER_ROLE.ADMIN){
 			await Users.findAll()
 			.then((data) =>  {
 				return res.json({
 					id: data,
-					message: 'List of users'
+					message: _req.i18n.__('List of users')
+					})
+			})
+			.catch((err) => {
+				return res.status(400).json({
+					status: 400,
+					message: err
 				})
 			})
 		}
@@ -46,7 +58,13 @@ export default () => {
 
 				return res.json({
 					data:elements,
-					message: 'List of users'
+					message: _req.i18n.__('List of users')
+				})
+			})
+			.catch((err) => {
+				return res.status(400).json({
+					status: 400,
+					message: err
 				})
 			})
 			
@@ -55,111 +73,138 @@ export default () => {
 	})
 
 	// Get profile / All users
-	router.get('/profile', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.get('/profile', passport.authenticate('jwt', {session:false}), setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const token = _req.get('Authorization').split(" ")[1];
 		
-		const data = await Users.findOne({where:{token:token}})
+		const loggedUser = await Users.findOne({where:{token:token}})
+		if (loggedUser === null){
+			return res.status(400).json({
+				status: 400,
+				message: _req.i18n.__("User not found!")
+			})
+		}
 
-		const exercise = await Exercise.findAll({ paranoid: false, where:{userId:data.id}})
+		const exercise = await Exercise.findAll({ paranoid: false, where:{userId:loggedUser.id}})
 		var exerciseFiltered = Array();
 		exercise.forEach(data => {
 			if(data.deletedAt){
 				exerciseFiltered.push({name:data.name, datetime:data.createdAt, difficulty:data.difficulty, duration: ((data.deletedAt - data.createdAt)/1000)	.toFixed(0)})
 			}
 		})
-		
 
 		return res.json({
-			name: data.name,
-			surname: data.surname,
-			age: data.age,
-			nickName: data.nickName,
-			message: 'Details of user',
+			name: loggedUser.surname,
+			age: loggedUser.age,
+			nickName: loggedUser.nickName,
+			message: _req.i18n.__('Details of user'),
 			exercises: exerciseFiltered
 		})
 	})
 
 	// Find User by ID / Admin only
-	router.get('/:id', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.get('/:id', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
 		const this_id = _req.params.id;
 
 		await Users.findByPk(this_id)
 		.then((user) => {
-			return res.json({
-				data: user,
-				message: 'Details of user'
-			})
+			if(user){
+				return res.json({
+					data: user,
+					message: _req.i18n.__('Details of user')
+				})
+			}
+			else{
+				return res.status(400).send({
+					message: _req.i18n.__('Cant find user with id ') + this_id
+				})
+			}
 		})
 		.catch(err => {
-			res.status(500).send({
-				message: 'Cant find user with id ' + this_id
+			console.error(err)
+			return res.status(500).send({
+				message: _req.i18n.__('Error')
 			})
 		})
 	})
 
 	// Update User / Admin only
-	router.put('/:id', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.put('/:id', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
 		const this_id = _req.params.id;
 		const { name, surname, nickName, age, role } = _req.body;
-		if(res.status(500)){
-			console.error("User account problem! checkIsInRole")
-			return
-		}
+		
 		await Users.update({ name, surname, nickName, age, role }, {where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
 			  res.send({
-				message: "User was successfully updated!"
+				message: _req.i18n.__("User was successfully updated!")
 			  });
 			} else {
 			  res.send({
-				message: `Cannot update user with id=${this_id}.`
+				message: _req.i18n.__("Cannot update user with id " +{this_id})
 			  });
 			}
 		  })
 		.catch(err => {
-			res.status(500).send({
-				message: "Could not update user with id=" + this_id
+			console.error(err)
+			return res.status(400).send({
+				message: _req.i18n.__("Could not update user with id ") + this_id
 			});
 		});
 	})
 
 	// Login
-	router.post('/login', async (_req: Request, res: Response, _next: NextFunction) => {
+	router.post('/login', setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const { email, password } = _req.body;
 
-        const userWithEmail = await UserModel.findOne({ where: {email} }).catch((err) => {
-            console.error("Error", err);
+        const userWithEmail = await UserModel.findOne({ where: {email} })
+		.catch((err) => {
+			console.error(err)
+            res.status(400).send({
+				message: _req.i18n.__('Cant find user with email ') + email
+			})
         });
 
         if(!userWithEmail)
-            return res.json({ message: "Email or password doesnt match!"});
+            return res.status(400).send({
+				message: _req.i18n.__('Email or password doesnt match!')
+			})
 
         if(userWithEmail.password !== password)
-            return res.json({ message: "Email or password doesnt match!"});
-
+			return res.status(400).send({
+				message: _req.i18n.__('Email or password doesnt match!')
+			})
+		try{
         const jwtToken = jwt.sign({ email: userWithEmail.email, password: userWithEmail.password }, 'test')
-        res.json({ Message: "Welcome!", token:jwtToken, role:userWithEmail.role});
+        res.json({ Message: _req.i18n.__("Welcome!"), token:jwtToken, role:userWithEmail.role});
         Users.update({token : jwtToken}, {where: { email:userWithEmail.email}})
+		}
+		catch(err){
+			console.error(err)
+		}
 	})
 
 	// Registration
-	router.post('/register', async (_req: Request, res: Response, _next: NextFunction) => {
-
+	router.post('/register', setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const { name, surname, nickName, email, password, age, role } = _req.body;
 
 		const alreadyExists = await UserModel.findOne({ where: {email} });
 
-		if (alreadyExists) return res.json({ message:"User Email already exists"});
+		if (alreadyExists) return res.status(400).send({
+			message: _req.i18n.__('User already exists!')
+		})
 
 		const newUser = new UserModel({ name, surname, nickName, email, password, age, role })
 		const savedUser = await newUser.save().catch((err) => {
 			console.log("err", err);
-			res.json({error:"Cannot register at the moment"})
+			return res.status(500).send({
+				message: _req.i18n.__('Cannot register at the moment!')
+			})
 		}); 
 
 		if(savedUser) return res.json({message: 'Thanks for registering!' });
-		else res.json({ error:"Cannot register at the moment!"});
+		else return res.status(500).send({
+			message: _req.i18n.__('Cannot register at the moment!')
+		});
 	})
 
 	return router

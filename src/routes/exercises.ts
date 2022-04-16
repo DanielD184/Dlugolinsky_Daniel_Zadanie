@@ -3,7 +3,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { models } from '../db'
 import { USER_ROLE } from '../utils/enums'
 import { checkIsInRole } from '../auth/roleCheck'
-
+import { setLang } from '../auth/setLocale'
 
 const router: Router = Router()
 const passport  = require('passport');
@@ -16,8 +16,7 @@ const {
 
 export default () => {
 	// Get all exercises / Admin only
-	router.get('/', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => 
-	{		
+	router.get('/', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
 		const exercises = await Exercise.findAll({ paranoid: false,
 			include: [{
 				model: Program,
@@ -27,53 +26,64 @@ export default () => {
 
 		return res.json({
 			data: exercises,
-			message: 'List of exercises'
+			message: _req.i18n.__('List of exercises')
 		})
 	})
 
 	// Create new exercises / Admin only
-	router.post('/', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
-		const { difficulty, name , programID, userId} = _req.body;
-
+	router.post('/', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+		const token = _req.get('Authorization').split(" ")[1];
+		const user = await Users.findOne({where:{token:token}})
+		const { difficulty, name , programID} = _req.body;
 		const alreadyExists = await Exercise.findOne({ where: {name} });
+		const userId = user.id
 
-		if (alreadyExists) return res.json({ message:"Exercise already exists"});
-
+		if (alreadyExists) return res.json({ message:_req.i18n.__("Exercise already exists")});
+		try{
 		const newExercise = new Exercise({ difficulty, name, programID, userId })
+		
 		const savedExercise = await newExercise.save().catch((err) => {
 			console.log("err", err);
-			return res.json({error:"Cannot create new exercise at the moment"})
+			return res.json({error:_req.i18n.__("Cannot create new exercise at the moment!")})
 		}); 
 
-		if(savedExercise) return res.json({message: 'Thanks for creating new exercise!' });
-		else return res.json({ error:"Cannot create new exercise at the moment!"});
+		if(savedExercise) return res.json({message: _req.i18n.__('Thanks for creating new exercise!')});
+		else return res.json({ error:_req.i18n.__("Cannot create new exercise at the moment!")});
+		}
+		catch(err){
+			return res.status(400).json(
+				{
+					status:400, 
+					message:err.message
+				})
+		}
 	})
 	
 	// Update exercises / Admin only
-	router.put('/:id', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.put('/:id', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
 		const this_id = _req.params.id;
 		await Exercise.update(_req.body, {where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
 			  	res.send({
-					message: "Exercise was successfully updated!"
+					message: _req.i18n.__("Exercise was successfully updated!")
 			  	});
 			} 
 			else {
 			  	res.send({
-					message: `Cannot update Exercise with id=${this_id}.`
+					message: _req.i18n.__("Cannot update Exercise with id ") + this_id
 			  	});
 			}
 		})
 		.catch(err => {
 			res.status(500).send({
-			  	message: "Could not update Exercise with id=" + this_id
+			  	message: _req.i18n.__("Could not update Exercise with id ") + this_id
 			});
 		});
 	})
 
 	// End Exercise / All
-	router.delete('/endexercise/:id', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.delete('/endexercise/:id', passport.authenticate('jwt', {session:false}), setLang(), async (_req: Request, res: Response, _next: NextFunction) => {
 		const this_id = _req.params.id;
 		const token = _req.get('Authorization').split(" ")[1];
 		const data = await Users.findOne({where:{token:token}})
@@ -82,7 +92,7 @@ export default () => {
 		console.log(test)
 		if(test === null){
 			return res.send({
-				message:`User with id ${data.id} doesnt track exercise ${this_id}.`
+				message: _req.i18n.__("User doesnt track this exercise.")
 			})
 		}
 		
@@ -90,72 +100,41 @@ export default () => {
 		.then(num => {
 			if (num == 1) {
 			  	res.send({
-					message: "Exercise was deleted successfully!"
+					message: _req.i18n.__("Exercise was deleted successfully!")
 			  	});
 			} 
 			else {
 				res.send({
-					message: `Cannot delete Exercise with id=${this_id}.`
+					message: _req.i18n.__("Cannot delete Exercise with id ") + this_id
 				});
 			}
 		})
 		.catch(err => {
 			res.status(500).send({
-			  	message: "Could not delete Exercise with id=" + this_id
-			});
-		});
-	})
-
-	// Track exercise
-	router.put('/track/:id', passport.authenticate('jwt', {session:false}), async (_req: Request, res: Response, _next: NextFunction) => {
-		const this_id = _req.params.id;
-		const token = _req.get('Authorization').split(" ")[1];
-		const data = await Users.findOne({where:{token:token}})
-		if(!Exercise.findOne({where:{userId:data.id, id:this_id}})){
-			console.log("Found it")
-			res.send({
-				message:`User with id ${data.id} doesnt track exercise ${this_id}.`
-			})
-		}
-		await Exercise.update(_req.body, {where: { id:this_id}})
-		.then(num => {
-			if (num == 1) {
-			  	res.send({
-					message: "Exercise was successfully updated!"
-			  	});
-			} 
-			else {
-			  	res.send({
-					message: `Cannot update Exercise with id=${this_id}.`
-			  	});
-			}
-		})
-		.catch(err => {
-			res.status(500).send({
-			  	message: "Could not update Exercise with id=" + this_id,
+			  	message: _req.i18n.__("Could not delete Exercise with id ") + this_id
 			});
 		});
 	})
 	
 	// Delete Exercise / Admin only
-	router.delete('/delete/:id', passport.authenticate('jwt', {session:false}), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
+	router.delete('/delete/:id', passport.authenticate('jwt', {session:false}), setLang(), checkIsInRole(USER_ROLE.ADMIN), async (_req: Request, res: Response, _next: NextFunction) => {
 		const id = _req.params.id;
 		await Exercise.destroy({where: { id:id}, force: true})
 		.then(num => {
 			if (num == 1) {
 			  	res.send({
-					message: "Exercise was deleted successfully!"
+					message: _req.i18n.__("Exercise was deleted successfully!")
 			  	});
 			} 
 			else {
 			  	res.send({
-					message: `Cannot delete Exercise with id=${id}.`
+					message: _req.i18n.__("Cannot delete Exercise with id ") + id
 			  	});
 			}
 		})
 		.catch(err => {
 			res.status(500).send({
-				message: "Could not delete Exercise with id=" + id
+				message: _req.i18n.__("Could not delete Exercise with id ") + id
 			});
 		});
 	})

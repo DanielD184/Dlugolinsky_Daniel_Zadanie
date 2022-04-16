@@ -8,7 +8,6 @@ import ExerciseRouter from './routes/exercises'
 import UsersRouter from './routes/users'
 import './auth/passport'
 
-
 require('dotenv').config()
 const app = express()
 
@@ -17,8 +16,6 @@ app.use(bodyParser.json())
 app.use('/programs', ProgramRouter())
 app.use('/exercises', ExerciseRouter())
 app.use('/users', UsersRouter())
-//app.use('/register', Register())
-//app.use('/login', Login())
 
 const httpServer = http.createServer(app)
 
