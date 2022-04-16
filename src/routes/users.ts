@@ -136,18 +136,20 @@ export default () => {
 		await Users.update({ name, surname, nickName, age, role }, {where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
-			  res.send({
-				message: _req.i18n.__("User was successfully updated!")
-			  });
-			} else {
-			  res.send({
-				message: _req.i18n.__("Cannot update user with id " +{this_id})
-			  });
+			  	res.send({
+					message: _req.i18n.__("User was successfully updated!")
+			  	});
+			} 
+			else {
+			  	res.send({
+					message: _req.i18n.__("Cannot update user with id " +{this_id})
+			  	});
 			}
-		  })
+		})
 		.catch(err => {
 			console.error(err)
-			return res.status(400).send({
+			return res.status(400).json({
+				status: 400,
 				message: _req.i18n.__("Could not update user with id ") + this_id
 			});
 		});
@@ -160,24 +162,30 @@ export default () => {
 		const errors = validationResult(_req)
 		console.error(errors)
 		if (!errors.isEmpty() && errors.errors[0].param === 'email') {
-			return res.status(400).send('Invalid email address. Please try again.')
+			return res.status(400).json({
+				status: 400,
+				message: 'Invalid email address. Please try again.'
+			})
 		}
 
         const userWithEmail = await UserModel.findOne({ where: {email} })
 		.catch((err) => {
 			console.error(err)
-            res.status(400).send({
+            res.status(400).json({
+				status: 400,
 				message: _req.i18n.__('Cant find user with email ') + email
 			})
         });
 
         if(!userWithEmail)
-            return res.status(400).send({
+            return res.status(400).json({
+				status: 400,
 				message: _req.i18n.__('Email or password doesnt match!')
 			})
 
         if(userWithEmail.password !== password)
-			return res.status(400).send({
+			return res.status(400).json({
+				status:400,
 				message: _req.i18n.__('Email or password doesnt match!')
 			})
 		try{
@@ -197,39 +205,48 @@ export default () => {
 		const errors = validationResult(_req)
 		console.error(errors)
 		if (!errors.isEmpty() && errors.errors[0].param === 'email') {
-			return res.status(400).send('Invalid email address. Please try again.')
+			return res.status(400).json({
+				status: 400,
+				message:'Invalid email address. Please try again.'
+			})
 		}
 		if (!errors.isEmpty() && errors.errors[0].param === 'password') {
-			return res
-			.status(400)
-			.send('Password must be longer than 6 characters.')
+			return res.status(400).json({
+				status: 400,
+				message: 'Password must be longer than 6 characters.'
+			})
 		}
 
 		if(role != USER_ROLE.ADMIN || role != USER_ROLE.USER){
-			return res.status(400).send(
-				"Invalid role. USER/ADMIN"
-			)
+			return res.status(400).json({
+				status: 400,
+				message: 'Invalid role. USER/ADMIN'
+			})
 		}
 
 		const alreadyExists = await UserModel.findOne({ where: {email} });
 
-		if (alreadyExists) return res.status(400).send({
+		if (alreadyExists) return res.status(400).json({
+			status: 400,
 			message: _req.i18n.__('User already exists!')
 		})
-		if (!email || !password) return res.status(400).send({
+		if (!email || !password) return res.status(400).json({
+			status: 400,
 			message: _req.i18n.__('Email or password is needed for registration.')
 		})
 
 		const newUser = new UserModel({ name, surname, nickName, email, password, age, role })
 		const savedUser = await newUser.save().catch((err) => {
 			console.log("err", err);
-			return res.status(500).send({
+			return res.status(500).json({
+				status:500,
 				message: _req.i18n.__('Cannot register at the moment!')
 			})
-		}); 
+		});
 
 		if(savedUser) return res.json({message: 'Thanks for registering!' });
-		else return res.status(500).send({
+		else return res.status(500).json({
+			status:500,
 			message: _req.i18n.__('Cannot register at the moment!')
 		});
 	})

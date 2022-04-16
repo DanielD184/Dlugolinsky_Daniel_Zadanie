@@ -56,18 +56,18 @@ export default () => {
 		const newExercise = new Exercise({ difficulty, name, programID, userId })
 		
 		const savedExercise = await newExercise.save().catch((err) => {
-			console.log("err", err);
+			console.error(err);
 			return res.json({error:_req.i18n.__("Cannot create new exercise at the moment!")})
 		}); 
 
 		if(savedExercise) return res.json({message: _req.i18n.__('Thanks for creating new exercise!')});
-		else return res.json({ error:_req.i18n.__("Cannot create new exercise at the moment!")});
+		else return res.json({ message:_req.i18n.__("Cannot create new exercise at the moment!")});
 		}
 		catch(err){
+			console.error(err)
 			return res.status(400).json(
 				{
 					status:400, 
-					message:err.message
 				})
 		}
 	})
@@ -89,7 +89,9 @@ export default () => {
 			}
 		})
 		.catch(err => {
-			res.status(500).send({
+			console.error(err)
+			res.status(500).json({
+				status:500,
 			  	message: _req.i18n.__("Could not update Exercise with id ") + this_id
 			});
 		});
@@ -101,8 +103,6 @@ export default () => {
 		const token = _req.get('Authorization').split(" ")[1];
 		const data = await Users.findOne({where:{token:token}})
 		const test = await Exercise.findOne({where:{userId:data.id, id:this_id}})
-		console.log("tes")
-		console.log(test)
 		if(test === null){
 			return res.send({
 				message: _req.i18n.__("User doesnt track this exercise.")
@@ -123,7 +123,9 @@ export default () => {
 			}
 		})
 		.catch(err => {
-			res.status(500).send({
+			console.error(err)
+			res.status(500).json({
+				status:500,
 			  	message: _req.i18n.__("Could not delete Exercise with id ") + this_id
 			});
 		});
@@ -146,7 +148,9 @@ export default () => {
 			}
 		})
 		.catch(err => {
-			res.status(500).send({
+			console.error(err)
+			res.status(500).json({
+				status:500,
 				message: _req.i18n.__("Could not delete Exercise with id ") + id
 			});
 		});

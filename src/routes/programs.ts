@@ -38,12 +38,12 @@ export default () => {
 
 		const newProgram = new Program({ name })
 		const savedProgram = await newProgram.save().catch((err) => {
-			console.log("err", err);
-			res.json({error: _req.i18n.__("Cannot create new Program at the moment!")})
+			console.error(err);
+			res.json({message: _req.i18n.__("Cannot create new Program at the moment!")})
 		}); 
 
 		if(savedProgram) return res.json({message: _req.i18n.__('Thanks for creating new Program!') });
-		else res.json({ error: _req.i18n.__("Cannot create new Program at the moment!")});
+		else res.json({ message: _req.i18n.__("Cannot create new Program at the moment!")});
 	})
 	
 	// Update Program / Admin only
@@ -52,7 +52,6 @@ export default () => {
 		await Program.update(_req.body, {where: { id:this_id}})
 		.then(num => {
 			if (num == 1) {
-			
 			  	res.send({
 					message: _req.i18n.__("Program was successfully updated!")
 			  	});
@@ -64,7 +63,9 @@ export default () => {
 				}
 		})
 		.catch(err => {
+			console.error(err)
 			res.status(500).send({
+				status: 500,
 			  	message: _req.i18n.__("Could not update Program with id ") + this_id
 			});
 		});
@@ -76,20 +77,23 @@ export default () => {
 		await Program.destroy({where: { id:id}})
 		.then(num => {
 			if (num == 1) {
-			  res.send({
-				message: _req.i18n.__("Program was deleted successfully!")
-			  });
-			} else {
-			  res.send({
+			  	res.send({
+					message: _req.i18n.__("Program was deleted successfully!")
+			  	});
+			} 
+			else {
+			  	res.send({
 				message: _req.i18n.__("Cannot delete Program with id ") + id
-			  });
+			  	});
 			}
-		  })
-		  .catch(err => {
+		})
+		.catch(err => {
+			console.error(err)	  
 			res.status(500).send({
-			  message: _req.i18n.__("Could not delete Program with id ") + id
+				status: 500,
+			  	message: _req.i18n.__("Could not delete Program with id ") + id
 			});
-		  });
+		});
 	})
 
 	return router

@@ -8,17 +8,17 @@ const StrategyJwt = passportJwt.Strategy;
 passport.use(
     new StrategyJwt(
         {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: 'test',
-        // TODO: process.env.ACCESS_TOKEN_SECRET insted of token
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            secretOrKey: 'test',
+            //process.env.ACCESS_TOKEN_SECRET
         },
         function (jwtPayload, done) {
         return UserModel.findOne({ where: { email: jwtPayload.email, password: jwtPayload.password } })
-           .then((user) => {
-            return done(null, user);
+            .then((user) => {
+                return done(null, user);
             })
             .catch((err) => {
-            return done(null,false);
+                return done(null,false);
             });
         }
     )

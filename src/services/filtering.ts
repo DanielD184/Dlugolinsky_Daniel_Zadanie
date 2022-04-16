@@ -15,7 +15,6 @@ const filterExercise = () => async (req: Request, res: Response, next: NextFunct
     const limit = parseInt(req.query.limit);
     const programID = parseInt(req.query.programID);
     const search = req.query.search;
-    console.log(search)
     const model = await Exercise.findAll({ paranoid: false,
         include: [{
             model: Program,
